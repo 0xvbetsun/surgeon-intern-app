@@ -1,0 +1,43 @@
+type DetailedUser {
+    userId: String!
+    email: String!
+    givenName: String!
+    familyName: String!
+    username: String!
+    clinicRoles: [ClinicRole!]
+    activated: Boolean!
+}
+
+input UpdateUserInput {
+    userId: String!
+    givenName: String!
+    familyName: String!
+}
+
+input ActivateUserInput {
+    email: String!
+    activationCode: String!
+    givenName: String!
+    familyName: String!
+    password: String!
+}
+
+input InviteUserInput {
+    email: String!@binding(constraint: "required,email")
+}
+
+enum ActivationVerificationStatus {
+    Active
+    Expired
+    Invalid
+    UnknownError
+}
+
+type ActivationVerification {
+    Status: ActivationVerificationStatus!
+}
+
+input ActivationVerificationInput {
+    email: String!,
+    activationCode: String!
+}

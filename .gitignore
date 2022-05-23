@@ -1,0 +1,4 @@
+.idea/
+.vscode/
+deploy/docker/og-book-firebase-adminsdk-8ja7o-1fab22b7ea.json
+deploy/docker/.env

@@ -1,0 +1,85 @@
+type Activity {
+    occurredAt: Time!
+    logbookEntry: LogbookEntry
+    assessment: Assessment
+}
+
+input ActivityQueryFilter {
+    logbookEntryFilter: LogbookEntryQueryFilter
+    assessmentFilter: AssessmentQueryFilter
+}
+
+enum ActivityType {
+    Surgery
+    Examination
+    Procedure
+    SurgeryReview
+    ExaminationReview
+    ProcedureReview
+    Dops
+    MiniCex
+}
+
+type LogbookEntry {
+    surgery: OrthopedicSurgeryActivity
+    examination: Examination
+    procedure: Procedure
+}
+
+input LogbookEntryQueryFilter {
+    residentId: String
+    supervisorId: String
+    hasReview: Boolean
+    isReviewed: Boolean
+    hasDops: Boolean
+    dopsEvaluated: Boolean
+    logbookEntryTypes: [LogbookEntryType!]
+    surgeryLogbookEntryFilters: SurgeryLogbookEntryQueryFilter
+    inProgress: Boolean
+}
+
+type Assessment {
+    surgeryReview: OrthopedicSurgeryActivityReview
+    dops: DopsEvaluation
+    miniCex: MiniCexEvaluation
+}
+
+input AssessmentQueryFilter {
+    assessmentTypes: [AssessmentType!]
+    dopsFilter: DopsQueryFilter
+    miniCexFilter: MiniCexQueryFilter
+    surgeryReviewFilter: SurgeryReviewQueryFilter
+}
+
+type Description {
+    title: String!
+    subrows: [DescriptionRow!]!
+}
+
+type DescriptionRow {
+    title: String!
+    subtitle: String
+    subtitleHighlight: String
+}
+
+input QueryOrder {
+    order: Order!
+    orderBy: OrderBy!
+}
+
+input QueryPaging {
+    perPage: Int!
+    page: Int!
+    limit: Int
+    Offset: Int
+}
+
+enum Order {
+    Ascending,
+    Descending
+}
+
+enum OrderBy {
+    OcurredAt
+}
+

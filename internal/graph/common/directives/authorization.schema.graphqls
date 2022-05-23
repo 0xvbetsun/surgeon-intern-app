@@ -1,0 +1,4 @@
+directive @hasAtLeastRole(role: RoleInput!) on FIELD_DEFINITION
+directive @hasOneOfRoles(roles: [RoleInput]!) on FIELD_DEFINITION
+directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION| FIELD_DEFINITION
+directive @binding(constraint: String!) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION

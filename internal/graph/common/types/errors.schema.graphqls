@@ -1,0 +1,6 @@
+enum Error {
+    UnAuthorized,
+    ItemNotFound,
+    BadRequest,
+    UnknownServerError,
+}

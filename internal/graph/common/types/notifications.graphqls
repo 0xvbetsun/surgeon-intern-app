@@ -1,0 +1,26 @@
+type Notification {
+    id: String!
+    user_id: String!
+    annotations: NotificationAnnotations!
+    createdAt: Time!
+    seenAt: Time
+}
+
+type NotificationAnnotations {
+    relatedId: String!
+    notificationUrl: String!
+    notificationType: NotificationType!
+}
+
+enum NotificationType {
+    Activity,
+    reviewRequest,
+    DopsRequest,
+    DopsEvaluation,
+    MiniCexRequest,
+    MiniCexEvaluation,
+}
+
+input SeenNotificationInput {
+    id: String!
+}

@@ -1,0 +1,36 @@
+type User {
+    userId: String!
+    displayName: String!
+    clinicRoles: [ClinicRole!]
+    clinicIds: [String!],
+}
+
+type ClinicRole {
+    clinic: Clinic!
+    role: Role!
+}
+
+input UserClinicRoleInput {
+    clinicId: String!@binding(constraint: "required,uuid")
+    roleIdentifier: String!
+    userId: String!@binding(constraint: "required,uuid")
+}
+
+enum UserType {
+    Resident,
+    Supervisor
+}
+
+enum Gender {
+    Male,
+    Female
+}
+
+type Role {
+    roleIdentifier: String!
+    displayName: String!
+}
+input RoleInput {
+    roleIdentifier: String!
+}
+

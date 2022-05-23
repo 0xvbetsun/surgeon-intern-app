@@ -1,0 +1,14 @@
+type Query {
+    users: [DetailedUser!]! @goField(forceResolver: true) @hasOneOfRoles(roles:[{roleIdentifier:"OgbookAdmin"}])
+    user(userId: String): DetailedUser! @goField(forceResolver: true) @hasOneOfRoles(roles:[{roleIdentifier:"OgbookAdmin"}])
+    clinics: [Clinic!]! @goField(forceResolver: true) @hasOneOfRoles(roles:[{roleIdentifier:"OgbookAdmin"}])
+    hospitals: [Hospital!]! @goField(forceResolver: true) @hasOneOfRoles(roles:[{roleIdentifier:"OgbookAdmin"}])
+    roles: [Role!]! @goField(forceResolver: true) @hasOneOfRoles(roles:[{roleIdentifier:"OgbookAdmin"}])
+}
+type Mutation {
+    updateUser(updateUser:UpdateUserInput!): DetailedUser! @goField(forceResolver: true) @hasOneOfRoles(roles:[{roleIdentifier:"OgbookAdmin"}])
+    inviteUser(inviteUser:InviteUserInput!): DetailedUser! @goField(forceResolver: true) @hasOneOfRoles(roles:[{roleIdentifier:"OgbookAdmin"}])
+    deleteUser(userId: String!): String @goField(forceResolver: true) @hasOneOfRoles(roles:[{roleIdentifier:"OgbookAdmin"}])
+    connectUserToClinic(clinicRole: UserClinicRoleInput!): ClinicRole @goField(forceResolver: true) @hasOneOfRoles(roles:[{roleIdentifier:"OgbookAdmin"}])
+    disconnectUserFromClinic(clinicRole: UserClinicRoleInput!): Int @goField(forceResolver: true) @hasOneOfRoles(roles:[{roleIdentifier:"OgbookAdmin"}])
+}

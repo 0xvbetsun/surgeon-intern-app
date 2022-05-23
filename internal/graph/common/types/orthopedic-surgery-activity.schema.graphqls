@@ -1,0 +1,152 @@
+type OrthopedicSurgeryActivity  {
+    id: String!
+    description: Description!
+    createdAt: Time!
+    surgeryMetadata: OrthopedicSurgeryMetadata!
+    residentUserId: String!
+    resident: User!
+    supervisorUserId: String
+    supervisor: User
+    operatorId: String
+    assistantId: String
+    comments: String!
+    complications: String!
+    annotations: OrthopedicSurgeryActivityAnnotations!
+    reviewRequested: Boolean!
+    review: OrthopedicSurgeryActivityReview
+    dopsRequested: Boolean!
+    dops: DopsEvaluation
+    inProgress: Boolean!
+    activeStep: Int!
+    completedStep: Int!
+}
+
+type OrthopedicSurgeryMetadata {
+    occurredAt: Time!
+    surgeries: [Surgery!]!
+    caseNotes: String!
+    patientAge: Int!
+    patientGender: String!
+}
+
+type OrthopedicSurgeryActivityAnnotations {
+    operationPlanning: OrthopedicSurgeryActivityAnnotationsField
+    patientPositioning: OrthopedicSurgeryActivityAnnotationsField
+    incision: OrthopedicSurgeryActivityAnnotationsField
+    opening: OrthopedicSurgeryActivityAnnotationsField
+    inspection: OrthopedicSurgeryActivityAnnotationsField
+    repositioning: OrthopedicSurgeryActivityAnnotationsField
+    sawingAndDrillning: OrthopedicSurgeryActivityAnnotationsField
+    osteosyntes: OrthopedicSurgeryActivityAnnotationsField
+    closing: OrthopedicSurgeryActivityAnnotationsField
+    plastering: OrthopedicSurgeryActivityAnnotationsField
+    postOp: OrthopedicSurgeryActivityAnnotationsField
+}
+
+type OrthopedicSurgeryActivityAnnotationsField {
+    withAssistance: Boolean!
+    withoutAssistance: Boolean!
+}
+
+type OrthopedicSurgeryActivityReview {
+    reviewId: String!
+    activityId: String!
+    description: Description!
+    activity: OrthopedicSurgeryActivity!
+    createdAt: Time!
+    updatedAt: Time!
+    signedAt: Time
+    surgeryMetadata: OrthopedicSurgeryMetadata!
+    operatorId: String!
+    assistantId: String!
+    comments: String!
+    complications: String!
+    annotations: OrthopedicSurgeryActivityAnnotations!
+    residentUserId: String!
+    supervisorUserId: String!
+    supervisor: User!,
+    resident: User!,
+    reviewComment: String!
+    inProgress: Boolean!
+    activeStep: Int!
+    completedStep: Int!
+}
+
+input SurgeryLogbookEntryQueryFilter {
+    date: Time @binding(constraint: "datetime")
+    inProgress: Boolean
+    hasDops: Boolean
+    hasReview: Boolean
+    surgeries: [String!]
+    residentId: String
+    supervisorId: String
+}
+
+input SurgeryReviewQueryFilter {
+    date: Time @binding(constraint: "datetime")
+    inProgress: Boolean
+    isEvaluated: Boolean
+    surgeries: [String!]
+    residentId: String
+    supervisorId: String
+}
+
+input OrthopedicSurgeryActivityAnnotationsInput {
+    operationPlanning: OrthopedicSurgeryActivityAnnotationsFieldInput
+    patientPositioning: OrthopedicSurgeryActivityAnnotationsFieldInput
+    incision: OrthopedicSurgeryActivityAnnotationsFieldInput
+    opening: OrthopedicSurgeryActivityAnnotationsFieldInput
+    inspection: OrthopedicSurgeryActivityAnnotationsFieldInput
+    repositioning: OrthopedicSurgeryActivityAnnotationsFieldInput
+    sawingAndDrillning: OrthopedicSurgeryActivityAnnotationsFieldInput
+    osteosyntes: OrthopedicSurgeryActivityAnnotationsFieldInput
+    closing: OrthopedicSurgeryActivityAnnotationsFieldInput
+    plastering: OrthopedicSurgeryActivityAnnotationsFieldInput
+    postOp: OrthopedicSurgeryActivityAnnotationsFieldInput
+}
+
+input OrthopedicSurgeryActivityAnnotationsFieldInput {
+    withAssistance: Boolean!
+    withoutAssistance: Boolean!
+}
+
+input OrthopedicSurgeryActivityInput  {
+    id: String
+    surgeryMetadata: OrthopedicSurgeryMetadataInput!
+    residentUserId: String
+    supervisorUserId: String
+    operatorId: String
+    assistantId: String
+    comments: String!
+    complications: String!
+    dopsRequested: Boolean!
+    reviewRequested: Boolean!
+    annotations: OrthopedicSurgeryActivityAnnotationsInput!
+    inProgress: Boolean!
+    activeStep: Int!
+    completedStep: Int!
+}
+
+input OrthopedicSurgeryMetadataInput {
+    surgeryIds: [String!]!
+    occurredAt: Time!
+    caseNotes: String!
+    patientAge: Int!
+    patientGender: String!
+}
+
+input OrthopedicSurgeryActivityReviewInput  {
+    reviewId: String
+    activityId: String!
+    surgeryMetadata: OrthopedicSurgeryMetadataInput!
+    operatorId: String!
+    assistantId: String!
+    comments: String!
+    complications: String!
+    annotations: OrthopedicSurgeryActivityAnnotationsInput!
+    reviewComment: String!
+    shouldSign: Boolean!
+    inProgress: Boolean!
+    activeStep: Int!
+    completedStep: Int!
+}

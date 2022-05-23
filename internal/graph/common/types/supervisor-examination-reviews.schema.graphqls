@@ -1,0 +1,39 @@
+type SupervisorExaminationReview  {
+    supervisorExaminationReviewId: String!
+    residentExaminationId: String!
+    residentUserId: String!
+    supervisorUserId: String!
+    displayName:  String!
+    annotations:  [SupervisorExaminationReviewAnnotations!]!
+    comment: String
+    createdAt:    Time!
+    residentUpdatedAt:    Time
+    supervisorUpdatedAt:    Time
+    isReviewed: Boolean!
+    resident: User!
+    supervisor: User!
+}
+
+type SupervisorExaminationReviewAnnotations {
+    label: String!
+    group: String!
+    value: Boolean!
+    evaluationGroup: String!
+    evaluationValue: Boolean!
+    comment: String
+}
+
+input SupervisorExaminationReviewInput {
+    supervisorExaminationReviewId: String!
+    annotations: [SupervisorExaminationReviewAnnotationsInput!]!
+    comment: String
+}
+
+input SupervisorExaminationReviewAnnotationsInput {
+    label: String!
+    group: String!
+    value: Boolean!
+    evaluationGroup: String!
+    evaluationValue: Boolean!
+    comment: String
+}

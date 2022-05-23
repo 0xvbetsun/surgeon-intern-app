@@ -1,0 +1,14 @@
+type Mutation {
+    submitResidentExamination(examination: ResidentExaminationInput!): ResidentExamination!
+    submitSupervisorExaminationReview(reviewedExamination: SupervisorExaminationReviewInput!): SupervisorExaminationReview!
+    submitOrthopedicSurgeryActivity(activityInput: OrthopedicSurgeryActivityInput!): String
+    submitOrthopedicSurgeryActivityReview(reviewInput: OrthopedicSurgeryActivityReviewInput!): String
+    submitDopsEvaluation(evaluationInput: DopsEvaluationInput!): String
+    deleteInProgressOrthopedicSurgeryActivity(activityId: String!): Boolean
+    deleteInProgressDopsEvaluation(dopsEvaluationId: String!): Boolean
+    deleteInProgressMiniCexEvaluation(miniCexEvaluationId: String!): Boolean
+    ConnectActivityToDopsEvaluation(activityId: String! dopsEvaluationId: String!) : OrthopedicSurgeryActivity!
+    submitMiniCexEvaluation(evaluationInput: MiniCexEvaluationInput!): String
+    requestMiniCexEvaluation(requestInput: MiniCexRequestInput!): String
+    setHasSeenNotifications(seenNotifications: [SeenNotificationInput!]!): [Notification!]!
+}

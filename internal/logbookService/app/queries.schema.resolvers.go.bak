@@ -1,0 +1,519 @@
+package webservice
+
+// This file will be automatically regenerated based on the schema, any resolver implementations
+// will be copied through when generating and any unknown code will be moved to the end.
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"github.com/vbetsun/surgeon-intern-app/internal/webservice/app/middleware"
+
+	"github.com/vbetsun/surgeon-intern-app/internal/webservice/graph/generated"
+	qlmodel "github.com/vbetsun/surgeon-intern-app/internal/webservice/graph/model"
+	"github.com/vbetsun/surgeon-intern-app/internal/webservice/pkg/gin"
+	"go.uber.org/zap"
+)
+
+func (r *queryResolver) Procedures(ctx context.Context) ([]*qlmodel.Procedure, error) {
+	procedures, err := r.service.ProceduresService.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return procedures, nil
+}
+
+func (r *queryResolver) Examinations(ctx context.Context) ([]*qlmodel.Examination, error) {
+	examinations, err := r.service.ExaminationsService.ListAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return examinations, nil
+}
+
+func (r *queryResolver) ResidentExaminations(ctx context.Context, residentUserID *int, supervisorUserID *int) ([]*qlmodel.ResidentExamination, error) {
+	if residentUserID != nil {
+		examinations, err := r.service.ResidentExaminationsService.GetByResidentUser(ctx, *residentUserID)
+		if err != nil {
+			return nil, err
+		}
+		return examinations, nil
+	}
+	if supervisorUserID != nil {
+		examinations, err := r.service.ResidentExaminationsService.GetBySupervisorUser(ctx, *supervisorUserID)
+		if err != nil {
+			return nil, err
+		}
+		return examinations, nil
+	}
+	// Assume that the authorized user is a resident doctor.
+	// TODO: think this trough...
+	gc, err := gin.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, errors.New("Unknown server error")
+	}
+	if uID, ok := gc.Get(middleware.AUTH0GinContextUserIDKey); ok != false {
+		zap.S().Info(uID)
+		user, err := r.service.UsersService.GetByExternalID(ctx, fmt.Sprintf("%v", uID))
+		if err != nil {
+			return nil, errors.New("Unknown server error")
+		}
+		examinations, err := r.service.ResidentExaminationsService.GetByResidentUser(ctx, user.UserID)
+		if err != nil {
+			return nil, err
+		}
+		return examinations, nil
+	}
+
+	return nil, errors.New("rEither resident user id or supervisor user id must be submitted.")
+}
+
+func (r *queryResolver) ResidentExamination(ctx context.Context, residentExaminationID string) (*qlmodel.ResidentExamination, error) {
+	examination, err := r.service.ResidentExaminationsService.GetById(ctx, residentExaminationID)
+	if err != nil {
+		return nil, err
+	}
+	return examination, nil
+}
+
+func (r *queryResolver) SupervisorExaminationReviews(ctx context.Context, reviewed *bool) ([]*qlmodel.SupervisorExaminationReview, error) {
+	// Assume that the authorized user is a supervisor.
+	gc, err := gin.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, errors.New("Unknown server error")
+	}
+	if uID, ok := gc.Get(middleware.GinContextUserIDKey); ok != false {
+		user, err := r.service.UsersService.GetByExternalID(ctx, fmt.Sprintf("%v", uID))
+		if err != nil {
+			return nil, errors.New("Unknown server error")
+		}
+		reviews, err := r.service.SupervisorExaminationReviewsService.GetBySupervisorUser(ctx, user.UserID, reviewed)
+		if err != nil {
+			return nil, err
+		}
+		return reviews, nil
+	}
+	return nil, errors.New("Couldn't get user through firebase id.")
+}
+
+func (r *queryResolver) SupervisorExaminationReview(ctx context.Context, supervisorExaminationReviewID string) (*qlmodel.SupervisorExaminationReview, error) {
+	review, err := r.service.SupervisorExaminationReviewsService.GetByExaminationId(ctx, supervisorExaminationReviewID)
+	if err != nil {
+		return nil, err
+	}
+	return review, nil
+}
+
+func (r *queryResolver) Examination(ctx context.Context, id string) (*qlmodel.Examination, error) {
+	examination, err := r.service.ExaminationsService.GetById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return examination, nil
+}
+
+func (r *queryResolver) ResidentActivities(ctx context.Context, residentUserID *int, queryFilters *qlmodel.ActivityQueryFilter) ([]*qlmodel.Activity, error) {
+	var userId *int
+
+	if residentUserID != nil {
+		user, err := r.service.UsersService.GetById(ctx, *residentUserID)
+		if err != nil {
+			return nil, err
+		}
+		userId = &user.UserID
+	} else {
+		user, err := UserFromContext(ctx, r.service.UsersService)
+		if err != nil {
+			return nil, errors.New("Unknown")
+		}
+		userId = &user.UserID
+	}
+	if userId == nil {
+		return nil, errors.New("No resident user id found succesfully")
+	}
+
+	activities, err := r.service.ActivitiesService.ActivitiesWhereUserIsResident(ctx, *userId, queryFilters)
+	if err != nil {
+		return nil, err
+	}
+	return activities, nil
+}
+
+func (r *queryResolver) SupervisorActivities(ctx context.Context) ([]*qlmodel.Activity, error) {
+	user, err := UserFromContext(ctx, r.service.UsersService)
+	if err != nil {
+		return nil, errors.New("Unknown")
+	}
+	activities, err := r.service.ActivitiesService.ActivitiesWhereUserIsReviewer(ctx, user.UserID, false)
+	if err != nil {
+		return nil, err
+	}
+	return activities, nil
+}
+
+func (r *queryResolver) Hospitals(ctx context.Context, organisationID *string) ([]*qlmodel.Hospital, error) {
+	if organisationID == nil {
+		hospitals, err := r.service.HospitalService.ListAll(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return hospitals, nil
+	} else {
+		hospitals, err := r.service.HospitalService.ListByOrganisationId(ctx, *organisationID)
+		if err != nil {
+			return nil, err
+		}
+		return hospitals, nil
+	}
+}
+
+func (r *queryResolver) Clinics(ctx context.Context, hospitalID *string) ([]*qlmodel.Clinic, error) {
+	if hospitalID == nil {
+		clinics, err := r.service.ClinicsService.ListAll(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return clinics, nil
+	} else {
+		clinics, err := r.service.ClinicsService.ListByHospitalId(ctx, *hospitalID)
+		if err != nil {
+			return nil, err
+		}
+		return clinics, nil
+	}
+}
+
+func (r *queryResolver) ClinicDepartments(ctx context.Context, clinicID string) ([]*qlmodel.ClinicDepartment, error) {
+	departments, err := r.service.ClinicsService.GetClinicDepartments(ctx, clinicID)
+	if err != nil {
+		return nil, err
+	}
+	return departments, nil
+}
+
+func (r *queryResolver) Supervisors(ctx context.Context, clinicID *string) ([]*qlmodel.User, error) {
+	if clinicID == nil {
+		supervisors, err := r.service.UsersService.ListAllSupervisors(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return supervisors, err
+	} else {
+		supervisors, err := r.service.UsersService.ListSupervisorsByClinicId(ctx, *clinicID)
+		if err != nil {
+			return nil, err
+		}
+		return supervisors, err
+	}
+}
+
+func (r *queryResolver) Residents(ctx context.Context, clinicID *string) ([]*qlmodel.User, error) {
+	if clinicID == nil {
+		residents, err := r.service.UsersService.ListAllResidents(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return residents, err
+	} else {
+		residents, err := r.service.UsersService.ListResidentsByClinicId(ctx, *clinicID)
+		if err != nil {
+			return nil, err
+		}
+		return residents, err
+	}
+}
+
+func (r *queryResolver) UserRoles(ctx context.Context, userID *int) ([]*qlmodel.Role, error) {
+	user, err := UserFromContext(ctx, r.service.UsersService)
+	if err != nil {
+		return nil, errors.New("Unknown")
+	}
+	roles, err := r.service.AuthorizationService.GetAvailableRolesForUser(ctx, user.UserID)
+	if err != nil {
+		return nil, err
+	}
+	return roles, nil
+}
+
+func (r *queryResolver) User(ctx context.Context) (*qlmodel.User, error) {
+	gc, err := gin.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, errors.New("Unknown server error")
+	}
+	if uID, ok := gc.Get(middleware.AUTH0GinContextUserIDKey); ok != false {
+		user, err := r.service.UsersService.GetByExternalID(ctx, uID.(string))
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
+	} else {
+		return nil, errors.New("Unknown server error")
+	}
+}
+
+func (r *queryResolver) PracticalActivityTypes(ctx context.Context) ([]*qlmodel.PracticalActivityType, error) {
+	gc, err := gin.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	zap.S().Info(gc.Get(middleware.GinContextUserIDKey))
+	zap.S().Info(gc.Get(middleware.GinContextUserClaimsKey))
+	zap.S().Info(gc.Get("user"))
+	practicalActivityTypes, err := r.service.PracticalActivityTypesService.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return practicalActivityTypes, nil
+}
+
+func (r *queryResolver) OrthopedicSurgeryActivitiesByResident(ctx context.Context, residentUserID *int) ([]*qlmodel.OrthopedicSurgeryActivity, error) {
+	var userId int
+	if residentUserID == nil {
+		gc, err := gin.GinContextFromContext(ctx)
+		if err != nil {
+			return nil, errors.New("Unknown server error")
+		}
+		if uID, ok := gc.Get(middleware.AUTH0GinContextUserIDKey); ok != false {
+			user, err := r.service.UsersService.GetByExternalID(ctx, uID.(string))
+			if err != nil {
+				return nil, err
+			}
+			userId = user.UserID
+		}
+	} else {
+		userId = *residentUserID
+	}
+	orthopedicSurgeryActivities, err := r.service.OrthopedicSurgeryService.ActivityService.GetByResident(ctx, userId)
+	if err != nil {
+		zap.S().Fatalf(err.Error())
+		return nil, err
+	}
+	return orthopedicSurgeryActivities, nil
+}
+
+func (r *queryResolver) OrthopedicSurgeryActivitiesBySupervisor(ctx context.Context, supervisorUserID *int) ([]*qlmodel.OrthopedicSurgeryActivity, error) {
+	var userId int
+	if supervisorUserID == nil {
+		gc, err := gin.GinContextFromContext(ctx)
+		if err != nil {
+			return nil, errors.New("Unknown server error")
+		}
+		if uID, ok := gc.Get(middleware.AUTH0GinContextUserIDKey); ok != false {
+			user, err := r.service.UsersService.GetByExternalID(ctx, uID.(string))
+			if err != nil {
+				return nil, err
+			}
+			userId = user.UserID
+		}
+	} else {
+		userId = *supervisorUserID
+	}
+	orthopedicSurgeryActivities, err := r.service.OrthopedicSurgeryService.ActivityService.GetBySupervisor(ctx, userId)
+	if err != nil {
+		zap.S().Fatalf(err.Error())
+		return nil, err
+	}
+	return orthopedicSurgeryActivities, nil
+}
+
+func (r *queryResolver) OrthopedicSurgeryActivityByID(ctx context.Context, activityID string) (*qlmodel.OrthopedicSurgeryActivity, error) {
+	orthopedicSurgeryActivity, err := r.service.OrthopedicSurgeryService.ActivityService.Get(ctx, activityID)
+	if err != nil {
+		zap.S().Errorf(err.Error())
+		return nil, err
+	}
+	return orthopedicSurgeryActivity, nil
+}
+
+func (r *queryResolver) OrthopedicSurgeryActivityReviewByID(ctx context.Context, reviewID string) (*qlmodel.OrthopedicSurgeryActivityReview, error) {
+	orthopedicSurgeryActivityReview, err := r.service.OrthopedicSurgeryService.ReviewService.Get(ctx, reviewID)
+	if err != nil {
+		zap.S().Errorf(err.Error())
+		return nil, err
+	}
+	return orthopedicSurgeryActivityReview, nil
+}
+
+func (r *queryResolver) OrthopedicSurgeryActivitySearch(ctx context.Context, searchQuery qlmodel.OrthopedicSurgeryActivitySearchQuery) ([]*qlmodel.OrthopedicSurgeryActivity, error) {
+	surgeries, err := r.service.OrthopedicSurgeryService.ActivityService.Search(ctx, searchQuery)
+	if err != nil {
+		zap.S().Errorf(err.Error())
+		return nil, err
+	}
+	return surgeries, nil
+}
+
+func (r *queryResolver) Surgeries(ctx context.Context, clinicID *string) ([]*qlmodel.Surgery, error) {
+	if clinicID != nil {
+		surgeries, err := r.service.OrthopedicSurgeryService.SurgeryService.GetByClinic(ctx, *clinicID)
+		if err != nil {
+			return nil, err
+		}
+		return surgeries, nil
+	}
+	surgeries, err := r.service.OrthopedicSurgeryService.SurgeryService.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return surgeries, nil
+}
+
+func (r *queryResolver) SurgeryByID(ctx context.Context, surgeryID string) (*qlmodel.Surgery, error) {
+	surgery, err := r.service.OrthopedicSurgeryService.SurgeryService.Get(ctx, surgeryID)
+	if err != nil {
+		return nil, err
+	}
+	return surgery, nil
+}
+
+func (r *queryResolver) SurgeriesByDiagnose(ctx context.Context, diagnoseID string) ([]*qlmodel.Surgery, error) {
+	surgeries, err := r.service.OrthopedicSurgeryService.SurgeryService.GetByDiagnose(ctx, diagnoseID)
+	if err != nil {
+		return nil, err
+	}
+	return surgeries, nil
+}
+
+func (r *queryResolver) SurgeriesByMethod(ctx context.Context, methodID string) ([]*qlmodel.Surgery, error) {
+	surgeries, err := r.service.OrthopedicSurgeryService.SurgeryService.GetByMethod(ctx, methodID)
+	if err != nil {
+		return nil, err
+	}
+	return surgeries, nil
+}
+
+func (r *queryResolver) SurgeryByDiagnoseAndMethod(ctx context.Context, methodID string, diagnoseID string) (*qlmodel.Surgery, error) {
+	surgery, err := r.service.OrthopedicSurgeryService.SurgeryService.GetByMethodAndDiagnose(ctx, methodID, diagnoseID)
+	if err != nil {
+		return nil, err
+	}
+	return surgery, nil
+}
+
+func (r *queryResolver) EvaluationForms(ctx context.Context) ([]*qlmodel.EvaluationForm, error) {
+	forms, err := r.service.EvaluationFormService.EvaluationForms.ListAllEvaluationForms(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return forms, nil
+}
+
+func (r *queryResolver) DopsEvaluations(ctx context.Context, userType qlmodel.UserType, isEvaluated *bool, isConnected *bool) ([]*qlmodel.DopsEvaluation, error) {
+	dops, err := r.service.EvaluationFormService.Dops.GetDopsEvaluations(ctx, userType, isEvaluated, isConnected)
+	if err != nil {
+		return nil, err
+	}
+	return dops, nil
+}
+
+func (r *queryResolver) DopsEvaluation(ctx context.Context, dopsEvaluationID string) (*qlmodel.DopsEvaluation, error) {
+	dopsEvaluation, err := r.service.EvaluationFormService.Dops.GetDopsEvaluationById(ctx, dopsEvaluationID)
+	if err != nil {
+		return nil, err
+	}
+	return dopsEvaluation, nil
+}
+
+func (r *queryResolver) MiniCexEvaluations(ctx context.Context, userType qlmodel.UserType, isEvaluated *bool) ([]*qlmodel.MiniCexEvaluation, error) {
+	dops, err := r.service.EvaluationFormService.MiniCex.GetMiniCexEvaluations(ctx, userType, isEvaluated)
+	if err != nil {
+		return nil, err
+	}
+	return dops, nil
+}
+
+func (r *queryResolver) MiniCexEvaluation(ctx context.Context, miniCexEvaluationID string) (*qlmodel.MiniCexEvaluation, error) {
+	dopsEvaluation, err := r.service.EvaluationFormService.MiniCex.GetMiniCexEvaluationById(ctx, miniCexEvaluationID)
+	if err != nil {
+		return nil, err
+	}
+	return dopsEvaluation, nil
+}
+
+func (r *queryResolver) MiniCexFocuses(ctx context.Context) ([]*qlmodel.MiniCexFocus, error) {
+	focuses, err := r.service.EvaluationFormService.MiniCex.GetMiniCexFocuses(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return focuses, nil
+}
+
+func (r *queryResolver) MiniCexAreas(ctx context.Context, departmentID string) ([]*qlmodel.MiniCexArea, error) {
+	areas, err := r.service.EvaluationFormService.MiniCex.GetMiniCexAreasByClinicId(ctx, departmentID)
+	if err != nil {
+		return nil, err
+	}
+	return areas, nil
+}
+
+func (r *queryResolver) Notifications(ctx context.Context, notificationType *qlmodel.NotificationType, hasSeen bool) ([]*qlmodel.Notification, error) {
+	notifications, err := r.service.NotificationService.GetNotifications(ctx, notificationType, hasSeen)
+	if err != nil {
+		return nil, err
+	}
+	return notifications, nil
+}
+
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+
+type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) ClinicLocations(ctx context.Context, clinicID string) ([]*qlmodel.ClinicDepartment, error) {
+	locations, err := r.service.ClinicsService.GetClinicDepartments(ctx, clinicID)
+	if err != nil {
+		return nil, err
+	}
+	return locations, nil
+}
+func (r *queryResolver) DopsForms(ctx context.Context) ([]*qlmodel.EvaluationForm, error) {
+	forms, err := r.service.EvaluationFormService.EvaluationForms.ListAllEvaluationForms(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return forms, nil
+}
+func (r *queryResolver) OrthopedicSurgeryActivities(ctx context.Context, searchQuery qlmodel.OrthopedicSurgeryActivitySearchQuery) ([]*qlmodel.OrthopedicSurgeryActivity, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+func (r *queryResolver) ActivitiesToBeReviewedBySupervisor(ctx context.Context) ([]*qlmodel.Activity, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+func (r *queryResolver) PracticalActivities(ctx context.Context) ([]*qlmodel.PracticalActivityType, error) {
+	gc, err := gin.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	zap.S().Info(gc.Get(middleware.GinContextUserIDKey))
+	zap.S().Info(gc.Get(middleware.GinContextUserClaimsKey))
+	zap.S().Info(gc.Get("user"))
+	practicalSteps, err := r.service.PracticalActivityTypesService.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return practicalSteps, nil
+}
+func (r *queryResolver) UserID(ctx context.Context) (int, error) {
+	gc, err := gin.GinContextFromContext(ctx)
+	if err != nil {
+		return 0, errors.New("Unknown server error")
+	}
+	if uID, ok := gc.Get(middleware.AUTH0GinContextUserIDKey); ok != false {
+		user, err := r.service.UsersService.GetByExternalID(ctx, uID.(string))
+		if err != nil {
+			return 0, err
+		}
+		return user.UserID, nil
+	} else {
+		return 0, errors.New("Unknown server error")
+	}
+}
+func (r *queryResolver) SurgeriesByDiagnoseAndMethod(ctx context.Context, surgeryID string, diagnoseID string) (*qlmodel.Surgery, error) {
+	panic(fmt.Errorf("not implemented"))
+}

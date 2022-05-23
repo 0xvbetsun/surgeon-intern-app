@@ -1,0 +1,84 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+scalar Time
+
+type ExaminationAnnotations {
+    label: String!
+    group: String!
+    evaluationGroup: String!
+}
+
+enum AnnotationType {
+    Checklist
+    OtherChecklist
+}
+
+enum LogbookEntryType {
+    Surgery
+    Examination
+    Procedure
+}
+
+enum AssessmentType {
+    SurgeryReview
+    ExaminationReview
+    ProcedureReview
+    Dops
+    MiniCex
+}
+
+type PracticalActivityType {
+    practicalActivityTypeId: Int!
+    displayName: String!
+    name: LogbookEntryType!
+}
+
+type Examination {
+    examinationId: String!
+    clinicId: String!
+    displayName:  String!
+    annotations:  [ExaminationAnnotations!]!
+}
+
+type Procedure {
+    procedureId: String!
+    clinicId: String!
+    displayName: String!
+    annotations: [ProcedureAnnotations!]!
+    branches: [ProcedureBranch!]!
+}
+
+type ProcedureBranch {
+    label: String
+    branches: [ProcedureBranch!]!
+}
+
+type ProcedureAnnotations {
+    methods: [Method!]!
+}
+
+type Method {
+    displayName: String!
+    aids: [Aid!]!
+}
+
+type Aid {
+    displayName: String!
+    routes: [Route!]!
+}
+
+type Route {
+    displayName: String!
+    purposes: [Purpose!]!
+}
+
+type Purpose {
+    displayName: String!
+    findings: [Finding!]!
+}
+
+type Finding {
+    displayName: String!
+}

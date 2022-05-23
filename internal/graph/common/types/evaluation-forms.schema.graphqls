@@ -1,0 +1,146 @@
+type EvaluationForm {
+    evaluationFormId: Int!
+    displayName: String!
+    difficulty: [String!]!
+    annotations: [EvaluationFormAnnotation!]!
+    citations: [String!]!
+}
+
+type EvaluationFormAnnotation {
+    subject: String!
+    description: String!
+    comment: String!
+    options: [String!]!
+    type: EvaluationFormAnnotationType!
+}
+
+enum EvaluationFormAnnotationType {
+    SlidingScale
+    Option
+    Summary
+}
+
+type DopsEvaluation {
+    dopsEvaluationId: String!
+    description: Description!
+    surgeryActivity: OrthopedicSurgeryActivity
+    supervisorId: String!
+    supervisor: User!
+    residentId: String!
+    resident: User!
+    surgeryMetadata: OrthopedicSurgeryMetadata!
+    difficulty: String
+    departmentId: String
+    department: ClinicDepartment
+    annotations: [EvaluationFormAnnotations!]!
+    isEvaluated: Boolean!
+    createdAt: Time!
+    inProgress: Boolean!
+    activeStep: Int!
+    completedStep: Int!
+}
+
+type MiniCexEvaluation {
+    id: String!
+    description: Description!
+    supervisorId: String!
+    supervisor: User!
+    residentId: String!
+    resident: User!
+    difficulty: String
+    focuses: [String!]!
+    area: String!
+    departmentId: String
+    department: ClinicDepartment
+    annotations: [EvaluationFormAnnotations!]!
+    isEvaluated: Boolean!
+    occurredAt: Time!
+    createdAt: Time!
+    inProgress: Boolean!
+    activeStep: Int!
+    completedStep: Int!
+}
+
+type EvaluationFormAnnotations {
+    subject: String!
+    description: String!
+    descriptionComment: String!
+    notObserved: Boolean
+    options: [String!]!
+    comment: String
+    value: Int
+    type: EvaluationFormAnnotationType!
+}
+
+type MiniCexFocus {
+    miniCexFocusId: Int!
+    name: String!
+}
+
+type MiniCexArea {
+    miniCexAreaId: Int!
+    departmentId: String!
+    name: String!
+}
+
+input MiniCexQueryFilter {
+    residentId: String
+    supervisorId: String
+    isEvaluated: Boolean
+    inProgress: Boolean
+}
+
+input DopsQueryFilter {
+    residentId: String
+    supervisorId: String
+    isEvaluated: Boolean
+    isConnected: Boolean
+    inProgress: Boolean
+    surgeries: [String!]
+}
+
+input DopsEvaluationInput {
+    dopsEvaluationId: String
+    surgeryMetadata: OrthopedicSurgeryMetadataInput
+    residentId: String
+    surgeryActivityId: String
+    difficulty: String
+    departmentId: String
+    annotations: [EvaluationFormAnnotationsInput!]!
+    inProgress: Boolean!
+    activeStep: Int!
+    completedStep: Int!
+}
+
+input MiniCexEvaluationInput {
+    id: String
+    residentId: String
+    difficulty: String
+    area: String!
+    focuses: [String!]!
+    departmentId: String
+    occurredAt: Time!
+    annotations: [EvaluationFormAnnotationsInput!]!
+    inProgress: Boolean!
+    activeStep: Int!
+    completedStep: Int!
+}
+
+input MiniCexRequestInput {
+    supervisorId: String
+    difficulty: String!
+    departmentId: String!
+    occurredAt: Time!
+    annotations: [EvaluationFormAnnotationsInput!]!
+}
+
+input EvaluationFormAnnotationsInput {
+    subject: String!
+    description: String!
+    descriptionComment: String!
+    notObserved: Boolean
+    options: [String!]!
+    comment: String
+    value: Int
+    type: EvaluationFormAnnotationType!
+}

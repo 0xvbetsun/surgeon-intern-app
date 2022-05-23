@@ -1,0 +1,18 @@
+version: "3.6"
+services:
+  db:
+    image: postgres:10-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+  db_fixtures:
+    image: tilt.dev/seeder
+    environment:
+      - DB_USER=postgres
+      - DB_NAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - BASE_SEED_JSON_PATH=/base-seed.json
+    depends_on:
+      - db

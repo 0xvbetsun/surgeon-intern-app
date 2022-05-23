@@ -1,0 +1,34 @@
+type ResidentExamination  {
+    residentExaminationId: String!
+    examinationId: String!
+    clinicId: Int!
+    displayName:  String!
+    annotations:  [ResidentExaminationAnnotations!]!
+    createdAt:    Time!
+    residentUserId: String!
+    resident: User!
+    supervisorUserId: String!
+    supervisor: User!
+}
+
+type ResidentExaminationAnnotations {
+    label: String!
+    group: String!
+    value: Boolean!
+    evaluationGroup: String!
+    evaluationValue: Boolean!
+}
+
+input ResidentExaminationInput {
+    supervisorUserId: String
+    examinationId: String!
+    annotations: [ResidentExaminationAnnotationsInput!]!
+}
+
+input ResidentExaminationAnnotationsInput {
+    label: String!
+    group: String!
+    value: Boolean!
+    evaluationGroup: String!
+    evaluationValue: Boolean!
+}

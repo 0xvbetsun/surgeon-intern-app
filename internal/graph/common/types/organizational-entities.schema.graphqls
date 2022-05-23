@@ -1,0 +1,25 @@
+type Hospital {
+    hospitalId: String!
+    displayName: String!
+    clinics: [Clinic!]
+}
+
+type Clinic {
+    clinicId: String!
+    displayName: String!
+    specialty: Specialties!
+    hospitalId: String
+    hospital: Hospital
+}
+
+enum Specialties {
+    Orthopedics
+    EmergencyMedicine
+    Unknown
+}
+
+type ClinicDepartment {
+    departmentId: String!
+    departmentName: String!
+    clinicId: String!
+}

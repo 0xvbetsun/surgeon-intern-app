@@ -1,0 +1,49 @@
+type Surgery {
+    id: String!
+    diagnose: SurgeryDiagnose!
+    method: SurgeryMethod!
+}
+
+type SurgeryDiagnose{
+    id: String!
+    bodypart: String!
+    diagnoseName: String!
+    diagnoseCode: String!
+    extraCode: String!
+}
+
+type SurgeryMethod{
+    id: String!
+    methodName: String!
+    methodCode: String!
+    approachName: String!
+}
+
+input SurgeryOrder {
+    order: Order!
+    orderBy: SurgeryOrderBy!
+}
+
+enum SurgeryOrderBy {
+    DiagnoseName,
+    MethodName
+}
+
+input SurgeryInput {
+    diagnose: SurgeryDiagnoseInput!
+    method: SurgeryMethodInput!
+}
+
+input SurgeryDiagnoseInput {
+    id: String!
+    bodypart: String!
+    diagnoseName: String!
+    diagnoseCode: String!
+}
+
+input SurgeryMethodInput {
+    id: String!
+    methodName: String!
+    methodCode: String!
+    approachName: String!
+}

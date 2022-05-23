@@ -1,0 +1,55 @@
+type Query {
+    # procedures
+    procedures: [Procedure!]!
+
+    # Examinations
+    examinations: [Examination!]! @hasAtLeastRole(role:{roleIdentifier:"Resident"})
+    residentExaminations(residentUserId: String, supervisorUserId: String): [ResidentExamination!] @hasAtLeastRole(role:{roleIdentifier:"Resident"})
+    residentExamination(residentExaminationId: String!): ResidentExamination!
+    supervisorExaminationReviews(reviewed: Boolean): [SupervisorExaminationReview!]!
+    supervisorExaminationReview(supervisorExaminationReviewId: String!): SupervisorExaminationReview!
+    examination(id: String!): Examination!
+
+    # Other
+    activities(queryFilter: ActivityQueryFilter!, orderBy: QueryOrder, pagination: QueryPaging): [Activity!]! @hasOneOfRoles(roles:[{roleIdentifier:"Resident"},{roleIdentifier: "Supervisor"}, {roleIdentifier: "Director"}])
+    logbookEntries(queryFilters: LogbookEntryQueryFilter!, orderBy: QueryOrder, pagination: QueryPaging): [LogbookEntry!]! @hasOneOfRoles(roles:[{roleIdentifier:"Resident"},{roleIdentifier: "Supervisor"}, {roleIdentifier: "Director"}])
+    assessments(queryFilters: AssessmentQueryFilter!, orderBy: QueryOrder, pagination: QueryPaging): [Assessment!]! @hasAtLeastRole(role:{roleIdentifier:"Supervisor"})
+
+    hospitals(organisationId: String): [Hospital!]! @hasAtLeastRole(role:{roleIdentifier:"Resident"})
+    clinics(hospitalId: String): [Clinic!]! @hasAtLeastRole(role:{roleIdentifier:"Resident"})
+    clinicDepartments(clinicId: String!): [ClinicDepartment!]! @hasAtLeastRole(role:{roleIdentifier:"Resident"})
+    clinicDepartment(departmentId: String!): ClinicDepartment! @hasAtLeastRole(role:{roleIdentifier:"Resident"})
+    supervisors(clinicId: String): [User!]! @hasAtLeastRole(role:{roleIdentifier:"Resident"})
+    residents(clinicId: String): [User!]! @hasAtLeastRole(role:{roleIdentifier:"Resident"})
+    userRoles(userId: String): [Role!] @hasOneOfRoles(roles:[{roleIdentifier:"Resident"},{roleIdentifier: "Supervisor"}, {roleIdentifier: "Director"}])
+    user(userId: String): User!
+    practicalActivityTypes: [PracticalActivityType!]! @hasAtLeastRole(role:{roleIdentifier:"Resident"})
+
+    # OrthopedicSurgeries
+    orthopedicSurgeryActivityById(activityId: String! @binding(constraint: "required,uuid")): OrthopedicSurgeryActivity!
+    orthopedicSurgeryActivityReviewById(reviewId: String! @binding(constraint: "required,uuid")): OrthopedicSurgeryActivityReview!
+    orthopedicSurgeryActivities(queryFilter: SurgeryLogbookEntryQueryFilter!, orderBy: QueryOrder): [OrthopedicSurgeryActivity!]!
+
+    Surgeries(clinicId: String, orderBy: SurgeryOrder, paging: QueryPaging ): [Surgery]!
+    SurgeryById(surgeryId: String! @binding(constraint: "required,uuid")): Surgery!
+    SurgeriesByDiagnose(diagnoseId: String! @binding(constraint: "required,uuid")): [Surgery]!
+    SurgeriesByMethod(methodId: String! @binding(constraint: "required,uuid")): [Surgery]!
+    SurgeryByDiagnoseAndMethod(methodId: String! @binding(constraint: "required,uuid"), diagnoseId: String! @binding(constraint: "required,uuid")): Surgery!
+
+    # Evaluation forms
+    evaluationForms: [EvaluationForm!]!
+
+    # Dops
+    dopsEvaluations(queryFilter: DopsQueryFilter!, orderBy: QueryOrder): [DopsEvaluation!]! @hasOneOfRoles(roles:[{roleIdentifier:"Resident"},{roleIdentifier: "Supervisor"}, {roleIdentifier: "Director"}])
+    dopsEvaluation(dopsId: String, activityId: String): DopsEvaluation!
+
+    # Mini-Cex
+    miniCexEvaluations(queryFilter: MiniCexQueryFilter!, orderBy: QueryOrder): [MiniCexEvaluation!]! @hasOneOfRoles(roles:[{roleIdentifier:"Resident"},{roleIdentifier: "Supervisor"}, {roleIdentifier: "Director"}])
+    miniCexEvaluation(miniCexEvaluationId: String!): MiniCexEvaluation!
+
+    miniCexFocuses: [MiniCexFocus!]!
+    miniCexAreas(departmentId: String!): [MiniCexArea!]!
+
+    # Notifications
+    notifications(notificationType: NotificationType, hasSeen: Boolean!): [Notification!]!
+}

@@ -1,0 +1,46 @@
+version: "3.7"
+services:
+  db:
+    image: postgres:10-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - webservice-network
+  db_fixtures:
+    image: registry.github.com/vbetsun/surgeon-intern-app/seeder:latest
+#    build:
+#      context: '../../'
+#      dockerfile: 'deploy/docker/dockerfiles/seeder.dockerfile'
+    environment:
+      - DB_USER=postgres
+      - DB_NAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - BASE_SEED_JSON_PATH=/base-seed.json
+    depends_on:
+      - db
+    networks:
+      - webservice-network
+  webservice:
+    image: registry.github.com/vbetsun/surgeon-intern-app:latest
+#    build:
+#      context: '../../'
+#      dockerfile: 'deploy/docker/dockerfiles/webservice.dockerfile'
+    environment:
+      - DB_CONN_STRING=postgresql://postgres:postgres@db:5432/postgres?sslmode=disable
+      - AUTH0_DOMAIN=${AUTH0_CYPRESS_ISSUER} # Must be set in a .env file
+      - AUTH0_AUDIENCE=${REACT_APP_AUTH0_CYPRESS_AUDIENCE} # Must be set in a .env file
+      - CASBIN_PG_TABLE=${CASBIN_PG_TABLE} # Must be set in a .env file
+      - CASBIN_CONFIG_FILE_PATH=${CASBIN_CONFIG_FILE_PATH} # Must be set in a .env file
+    depends_on:
+      - db
+    networks:
+      - webservice-network
+    command: [ "/bin/sh", "-c", "wait-on -v tcp:db:5432 && ./main"  ]
+
+networks:
+  webservice-network:
+    driver: bridge
+    name: ci-webservice-network
